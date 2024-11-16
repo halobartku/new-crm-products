@@ -9,10 +9,14 @@ interface Store {
   addProduct: (product: Product) => void;
   updateProduct: (id: string, product: Partial<Product>) => void;
   addClient: (client: Client) => void;
+  addDeal: (deal: Deal) => void;
+  updateDeal: (id: string, deal: Partial<Deal>) => void;
+  deleteDeal: (id: string) => void;
   updateDealStage: (dealId: string, stage: PipelineStage) => void;
+  getDealsByStage: (stage: PipelineStage) => Deal[];
 }
 
-export const useStore = create<Store>((set) => ({
+export const useStore = create<Store>((set, get) => ({
   products: [],
   clients: [],
   deals: [],
@@ -27,6 +31,20 @@ export const useStore = create<Store>((set) => ({
     })),
   addClient: (client) =>
     set((state) => ({ clients: [...state.clients, client] })),
+  addDeal: (deal) =>
+    set((state) => ({ deals: [...state.deals, deal] })),
+  updateDeal: (id, dealUpdate) =>
+    set((state) => ({
+      deals: state.deals.map((deal) =>
+        deal.id === id
+          ? { ...deal, ...dealUpdate, updatedAt: new Date() }
+          : deal
+      ),
+    })),
+  deleteDeal: (id) =>
+    set((state) => ({
+      deals: state.deals.filter((deal) => deal.id !== id),
+    })),
   updateDealStage: (dealId, stage) =>
     set((state) => ({
       deals: state.deals.map((deal) =>
@@ -35,4 +53,8 @@ export const useStore = create<Store>((set) => ({
           : deal
       ),
     })),
+  getDealsByStage: (stage) => {
+    const state = get();
+    return state.deals.filter((deal) => deal.stage === stage);
+  },
 }));
