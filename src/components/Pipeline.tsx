@@ -4,7 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Deal, PipelineStage } from '../types';
 import { useStore } from '../store/useStore';
 import { AddDealModal } from './AddDealModal';
-import { DollarSign, Calendar, FileText, User, MoreVertical } from 'lucide-react';
+import { DollarSign, Calendar, FileText, MoreVertical } from 'lucide-react';
+
+interface PipelineProps {
+  deals: Deal[];
+}
 
 const stages: { id: PipelineStage; label: string; color: string }[] = [
   { id: 'lead', label: 'Lead', color: 'bg-gray-50 hover:bg-gray-100' },
@@ -116,9 +120,9 @@ function DealCard({ deal, index }: DealCardProps) {
   );
 }
 
-export function Pipeline() {
+export function Pipeline({ deals }: PipelineProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const { deals, updateDealStage } = useStore();
+  const { updateDealStage } = useStore();
 
   const getStageTotal = (stageId: PipelineStage) => {
     return deals

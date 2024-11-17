@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Package, ArrowRight } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface LoginPageProps {
-  onLogin: () => void;
+  onLogin: (token: string) => void;
 }
 
 export function LoginPage({ onLogin }: LoginPageProps) {
@@ -11,10 +12,31 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin();
+    setIsLoading(true);
+
+    try {
+      // For demo purposes, we're using a mock token
+      // In a real app, this would be an API call
+      const mockToken = 'mock_jwt_token';
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      if (email && password) {
+        onLogin(mockToken);
+        toast.success(isLogin ? 'Successfully logged in!' : 'Account created successfully!');
+      } else {
+        toast.error('Please fill in all fields');
+      }
+    } catch (error) {
+      toast.error('Authentication failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -118,10 +140,19 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             <div>
               <button
                 type="submit"
-                className="w-full flex justify-center items-center gap-2 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                disabled={isLoading}
+                className={`w-full flex justify-center items-center gap-2 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+                  isLoading ? 'opacity-75 cursor-not-allowed' : ''
+                }`}
               >
-                {isLogin ? "Sign in" : "Register"}
-                <ArrowRight size={16} />
+                {isLoading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    {isLogin ? "Sign in" : "Register"}
+                    <ArrowRight size={16} />
+                  </>
+                )}
               </button>
             </div>
           </form>
