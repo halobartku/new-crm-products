@@ -19,6 +19,7 @@ interface DealCardProps {
 
 function DealCard({ deal }: DealCardProps) {
   const updateDealStage = useStore((state) => state.updateDealStage);
+  const updateDeal = useStore((state) => state.updateDeal);
   const deleteDeal = useStore((state) => state.deleteDeal);
   const clients = useStore((state) => state.clients);
   const client = clients.find((c) => c.id === deal.clientId);
@@ -62,11 +63,14 @@ function DealCard({ deal }: DealCardProps) {
           </button>
         </div>
       </div>
+      <div className="mt-2 text-xs text-gray-400">
+        Last updated: {new Date(deal.updatedAt).toLocaleDateString()}
+      </div>
     </motion.div>
   );
 }
 
-function Pipeline() {
+export function Pipeline() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const deals = useStore((state) => state.deals);
 
@@ -111,5 +115,3 @@ function Pipeline() {
     </div>
   );
 }
-
-export default Pipeline;
