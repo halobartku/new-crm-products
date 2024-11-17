@@ -1,8 +1,6 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { Client, Deal } from '../types';
-import { X } from 'lucide-react';
 
 interface AddDealModalProps {
   isOpen: boolean;
@@ -40,36 +38,18 @@ export function AddDealModal({ isOpen, onClose }: AddDealModalProps) {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-    >
-      <motion.div
-        initial={{ scale: 0.95 }}
-        animate={{ scale: 1 }}
-        exit={{ scale: 0.95 }}
-        className="bg-white rounded-lg p-6 w-full max-w-md relative"
-      >
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
-        >
-          <X size={24} />
-        </button>
-
-        <h2 className="text-2xl font-bold mb-6">Add New Lead</h2>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <h2 className="text-xl font-semibold mb-4">Add New Lead</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Client
             </label>
             <select
               value={selectedClient}
               onChange={(e) => setSelectedClient(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full border rounded-md p-2"
               required
             >
               <option value="">Select a client</option>
@@ -81,7 +61,7 @@ export function AddDealModal({ isOpen, onClose }: AddDealModalProps) {
             </select>
           </div>
           
-          <div>
+          <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Potential Value
             </label>
@@ -89,26 +69,26 @@ export function AddDealModal({ isOpen, onClose }: AddDealModalProps) {
               type="number"
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full border rounded-md p-2"
               placeholder="Enter potential value"
               required
             />
           </div>
 
-          <div>
+          <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Notes
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full border rounded-md p-2"
               rows={3}
               placeholder="Enter any notes"
             />
           </div>
 
-          <div className="flex justify-end gap-4 mt-6">
+          <div className="flex justify-end gap-2">
             <button
               type="button"
               onClick={onClose}
@@ -118,13 +98,13 @@ export function AddDealModal({ isOpen, onClose }: AddDealModalProps) {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
               Add Lead
             </button>
           </div>
         </form>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
