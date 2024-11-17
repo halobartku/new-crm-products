@@ -38,6 +38,8 @@ export interface Client {
   type: ClientType;
   company?: string;
   vatNumber?: string;
+  createdAt: Date;
+  notes?: string;
 }
 
 export interface Deal {

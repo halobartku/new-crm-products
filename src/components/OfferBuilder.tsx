@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Product } from '../types';
-import { Trash2, Calculator } from 'lucide-react';
+import { Product, Client } from '../types';
+import { Trash2, Calculator, User, Building2, Mail, Phone, UserPlus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { OfferPDF } from './OfferPDF';
+import { ClientSearchModal } from './ClientSearchModal';
 
 interface OfferBuilderProps {
   selectedProducts: Product[];
@@ -12,16 +13,22 @@ interface OfferBuilderProps {
 
 export function OfferBuilder({ selectedProducts, onRemoveProduct }: OfferBuilderProps) {
   const [discountRate, setDiscountRate] = useState(0);
-  const [customerName, setCustomerName] = useState('');
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [showClientSearch, setShowClientSearch] = useState(false);
   const [showPDF, setShowPDF] = useState(false);
 
-  const subtotal = selectedProducts.reduce((sum, product) => sum + product.price, 0);
+  const subtotal = selectedProducts.reduce((sum, product) => {
+    // Use b2bPrice if client is b2b, otherwise use regular price
+    const price = selectedClient?.type === 'b2b' ? product.b2bPrice : product.price;
+    return sum + price;
+  }, 0);
+  
   const discount = (subtotal * discountRate) / 100;
   const total = subtotal - discount;
 
   const handleCreateOffer = () => {
-    if (!customerName) {
-      toast.error('Please enter a customer name');
+    if (!selectedClient) {
+      toast.error('Please select a client');
       return;
     }
     if (selectedProducts.length === 0) {
@@ -40,15 +47,54 @@ export function OfferBuilder({ selectedProducts, onRemoveProduct }: OfferBuilder
         
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Customer Name
+            Client
           </label>
-          <input
-            type="text"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            placeholder="Enter customer name"
-          />
+          {selectedClient ? (
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="flex justify-between items-start">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium text-gray-900">{selectedClient.name}</h3>
+                    <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                      selectedClient.type === 'b2b' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {selectedClient.type.toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Mail size={14} className="mr-2" />
+                      {selectedClient.email}
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Phone size={14} className="mr-2" />
+                      {selectedClient.phone}
+                    </div>
+                    {selectedClient.company && (
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Building2 size={14} className="mr-2" />
+                        {selectedClient.company}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowClientSearch(true)}
+                  className="text-indigo-600 hover:text-indigo-700 text-sm font-medium"
+                >
+                  Change
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowClientSearch(true)}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:text-indigo-600 hover:border-indigo-500 transition-colors"
+            >
+              <UserPlus size={20} />
+              Select Client
+            </button>
+          )}
         </div>
 
         <div className="mb-6">
@@ -66,7 +112,9 @@ export function OfferBuilder({ selectedProducts, onRemoveProduct }: OfferBuilder
               >
                 <div>
                   <h4 className="font-medium text-gray-800">{product.name}</h4>
-                  <p className="text-sm text-gray-600">${product.price.toFixed(2)}</p>
+                  <p className="text-sm text-gray-600">
+                    ${(selectedClient?.type === 'b2b' ? product.b2bPrice : product.price).toFixed(2)}
+                  </p>
                 </div>
                 <button
                   onClick={() => onRemoveProduct(product.id)}
@@ -117,14 +165,24 @@ export function OfferBuilder({ selectedProducts, onRemoveProduct }: OfferBuilder
         </button>
       </div>
 
-      {showPDF && (
+      <AnimatePresence>
+        {showClientSearch && (
+          <ClientSearchModal
+            onClose={() => setShowClientSearch(false)}
+            onSelect={setSelectedClient}
+          />
+        )}
+      </AnimatePresence>
+
+      {showPDF && selectedClient && (
         <OfferPDF
           products={selectedProducts}
-          customerName={customerName}
+          customerName={selectedClient.name}
           total={total}
           subtotal={subtotal}
           discount={discount}
           discountRate={discountRate}
+          client={selectedClient}
         />
       )}
     </div>
