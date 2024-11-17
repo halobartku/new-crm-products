@@ -1,148 +1,92 @@
-import { useState } from 'react';
-import {
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  getSortedRowModel,
-  getFilteredRowModel,
-} from '@tanstack/react-table';
-import { Product, ProductCategory } from '../types';
-import { Search, ArrowUpDown } from 'lucide-react';
+import React from 'react';
+import { Product } from '../types';
 
-const columnHelper = createColumnHelper<Product>();
-
-const columns = [
-  columnHelper.accessor('sku', {
-    header: 'SKU',
-    cell: (info) => info.getValue(),
-  }),
-  columnHelper.accessor('name', {
-    header: 'Name',
-    cell: (info) => info.getValue(),
-  }),
-  columnHelper.accessor('category', {
-    header: 'Category',
-    cell: (info) => info.getValue(),
-  }),
-  columnHelper.accessor('price', {
-    header: 'Retail Price',
-    cell: (info) => `$${info.getValue().toFixed(2)}`,
-  }),
-  columnHelper.accessor('b2bPrice', {
-    header: 'B2B Price',
-    cell: (info) => `$${info.getValue().toFixed(2)}`,
-  }),
-  columnHelper.accessor('stock', {
-    header: 'Stock',
-    cell: (info) => info.getValue(),
-  }),
-];
-
-interface ProductTableProps {
+interface ProductGridProps {
   products: Product[];
-  onEdit?: (product: Product) => void;
+  onSelect: (product: Product) => void;
 }
 
-export function ProductTable({ products, onEdit }: ProductTableProps) {
-  const [globalFilter, setGlobalFilter] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<ProductCategory | 'all'>(
-    'all'
-  );
-
-  const table = useReactTable({
-    data: products,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      globalFilter,
-    },
-    onGlobalFilterChange: setGlobalFilter,
-  });
-
-  const filteredProducts =
-    categoryFilter === 'all'
-      ? products
-      : products.filter((p) => p.category === categoryFilter);
-
+export function ProductGrid({ products, onSelect }: ProductGridProps) {
   return (
-    <div className="bg-white rounded-lg shadow-md">
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-            <input
-              value={globalFilter ?? ''}
-              onChange={(e) => setGlobalFilter(e.target.value)}
-              className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              placeholder="Search products..."
-            />
-          </div>
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value as ProductCategory | 'all')}
-            className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {products.map((product) => (
+          <div
+            key={product.id}
+            className="group bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer"
+            onClick={() => onSelect(product)}
           >
-            <option value="all">All Categories</option>
-            <option value="Training Jumps">Training Jumps</option>
-            <option value="Training Stands">Training Stands</option>
-            <option value="Tournament Jumps">Tournament Jumps</option>
-            <option value="Tournament Stands">Tournament Stands</option>
-            <option value="Fillers">Fillers</option>
-            <option value="Planks">Planks</option>
-            <option value="Accessories">Accessories</option>
-            <option value="Packages">Packages</option>
-          </select>
+            <div className="aspect-w-16 aspect-h-9 bg-gray-100 relative overflow-hidden">
+              <img
+                src={product.image || '/api/placeholder/400/320'}
+                alt={product.name}
+                className="object-cover w-full h-48 group-hover:scale-105 transition-transform duration-300"
+              />
+              {product.stock <= 10 && (
+                <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                  Low Stock
+                </div>
+              )}
+            </div>
+            
+            <div className="p-4">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
+                  {product.name}
+                </h3>
+              </div>
+              
+              <p className="text-sm text-gray-600 mb-2">
+                SKU: {product.sku}
+              </p>
+              
+              <p className="text-sm text-gray-500 mb-3 line-clamp-2">
+                {product.description}
+              </p>
+              
+              <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                <div className="flex flex-col">
+                  <span className="text-lg font-bold text-gray-900">
+                    ${product.price.toFixed(2)}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    B2B: ${product.b2bPrice.toFixed(2)}
+                  </span>
+                </div>
+                
+                <div className="flex flex-col items-end">
+                  <span className={`text-sm ${
+                    product.stock > 10 
+                      ? 'text-green-600' 
+                      : product.stock > 0 
+                        ? 'text-yellow-600' 
+                        : 'text-red-600'
+                  }`}>
+                    {product.stock > 0 
+                      ? `${product.stock} in stock`
+                      : 'Out of stock'
+                    }
+                  </span>
+                  <span className="text-xs text-gray-500 mt-1">
+                    {product.category}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {products.length === 0 && (
+        <div className="text-center py-12">
+          <div className="text-gray-400 text-lg">
+            No products found
+          </div>
+          <p className="text-gray-500 text-sm mt-2">
+            Try adjusting your search or filters
+          </p>
         </div>
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id} className="bg-gray-50">
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    <div
-                      className="flex items-center gap-2 cursor-pointer"
-                      onClick={header.column.getToggleSortingHandler()}
-                    >
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
-                      <ArrowUpDown size={14} />
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                className="hover:bg-gray-50 cursor-pointer"
-                onClick={() => onEdit?.(row.original)}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <td
-                    key={cell.id}
-                    className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      )}
     </div>
   );
 }
